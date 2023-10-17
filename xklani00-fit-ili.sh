@@ -96,7 +96,7 @@ function verify_repo_availability () {
 
 # $1 - block device name
 function unmount () {
-    umount "$1"
+    umount -l "$1"
 }
 
 # $1 - block device name
