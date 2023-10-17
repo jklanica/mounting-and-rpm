@@ -43,7 +43,7 @@ function mount_loop () {
 # $2 - mount point
 function download_packages () {
     cd "$1"
-    for package in "$@"; do
+    for package in "${@:2}"; do
         echo ".. downloading $package"
         yum download "$package"
     done
@@ -109,7 +109,7 @@ execute "create_loop $UKOL_IMG" "2) Creating loop device for $UKOL_IMG"
 execute "create_fs ext4 $LOOP_NAME" "3) Creating filesystem ext4 on the new loop device"
 execute "edit_fstab $LOOP_NAME $HTML_UKOL ext4" "4) Editing $ETC_FSTAB for automatic filesystem mounting"
 execute "mount_loop $LOOP_NAME $HTML_UKOL" "5) Mounting filesystem to $HTML_UKOL"
-execute "download_packages $*" "6) Downloading packages"
+execute "download_packages $HTML_UKOL $*" "6) Downloading packages"
 execute "generate_repodata $HTML_UKOL" "7) Generating repodata in $HTML_UKOL"
 execute "configure_repo_url ukol http://localhost/ukol" "8) Configuring /etc/yum.repos.d/ukol.repo for localhost url"
 execute "install_and_launch_webserver" "9) Installing and launching webserver"
