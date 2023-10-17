@@ -7,7 +7,7 @@ function install_miss_req () {
 # $1 - size with units
 # $2 - image name
 function create_img () {
-    dd if=/dev/zero of="$2" bs="$1" count=1 > /dev/null
+    dd if=/dev/zero of="$2" bs="$1" count=1
 }
 
 # $1 - image name
@@ -19,7 +19,7 @@ function create_loop () {
 # $1 - fs type
 # $2 - loop name
 function create_fs () {
-    mkfs -t "$1" "$2"
+    mkfs -t "$1" "$2" 1> /dev/null
 }
 
 # $1 - loop name
@@ -39,9 +39,13 @@ function mount_loop () {
     mount "$1" "$2"
 }
 
+# $1 - output directory
+# $2 - mount point
 function download_packages () {
+    cd "$1"
     for package in "$@"; do
         echo ".. downloading $package"
+        yum download "$package"
     done
 }
 
