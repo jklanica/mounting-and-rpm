@@ -83,30 +83,33 @@ function configure_repo_url () {
         "gpgcheck=0" \
         "enabled=1" \
         > "$FILE_PATH"
-    return 0
 }
 
-function install_and_launch_webserver () {
-    echo ".. installing"
-    echo ".. launching"
-    return 0
+function launch_webserver () {
+    service httpd start
 }
 
+# $1 - repo name
 function verify_repo_availability () {
-    return 0
+    yum repolist | grep "$1" &> /dev/null
 }
 
+# $1 - block device name
 function unmount () {
-    return 0
+    umount "$1"
 }
 
+# $1 - block device name
 function remount () {
     echo ".. mounting all filesystems according to /etc/fstab"
+    mount -a || return 1
     echo ".. verifying filesystem is mounted"
-    return 0
+    mount | grep "$1"
 }
 
+# $1 - repo name
 function print_info () {
+    yum info --repo "$1"
     return 0
 }
 
@@ -125,22 +128,24 @@ function execute () {
 trap "exit 1" USR1
 export TOP_PID=$$
 
-MISSING_REQUIREMENTS="createrepo"
+MISSING_REQUIREMENTS="httpd createrepo"
 UKOL_IMG=/var/tmp/ukol.img
 HTML_UKOL=/var/www/html/ukol
 ETC_FSTAB=/etc/fstab
+REPO_NAME=ukol
+FS_TYPE=ext4
 
 execute "install_miss_req $MISSING_REQUIREMENTS"
-execute "create_img 200MB $UKOL_IMG"                            "1) Creating 200 MB file $UKOL_IMG"
-execute "create_loop $UKOL_IMG"                                 "2) Creating loop device for $UKOL_IMG"
-execute "create_fs ext4 $LOOP_NAME"                             "3) Creating filesystem ext4 on the new loop device"
-execute "edit_fstab $LOOP_NAME $HTML_UKOL ext4"                 "4) Editing $ETC_FSTAB for automatic filesystem mounting"
-execute "mount_loop $LOOP_NAME $HTML_UKOL"                      "5) Mounting filesystem to $HTML_UKOL"
-execute "download_packages $HTML_UKOL $*"                       "6) Downloading packages"
-execute "generate_repodata $HTML_UKOL"                          "7) Generating repodata in $HTML_UKOL"
-execute "configure_repo_url ukol ukol http://localhost/ukol"    "8) Configuring /etc/yum.repos.d/ukol.repo for localhost url"
-execute "install_and_launch_webserver"                          "9) Installing and launching webserver"
-execute "verify_repo_availability"                              "10) Verification of ukol repository availability"
-execute "unmount"                                               "11) Unmounting filesystem from $HTML_UKOL" 
-execute "remount"                                               "12) Remounting filesystem through $ETC_FSTAB and verifying mount state" 
-execute "print_info"                                            "13) Printing info about all available packages in \"ukol\" repository" 
+execute "create_img 200MB $UKOL_IMG"                                            "1) Creating 200 MB file $UKOL_IMG"
+execute "create_loop $UKOL_IMG"                                                 "2) Creating loop device for $UKOL_IMG"
+execute "create_fs $FS_TYPE $LOOP_NAME"                                         "3) Creating filesystem $FS_TYPE on the new loop device"
+execute "edit_fstab $LOOP_NAME $HTML_UKOL $FS_TYPE"                             "4) Editing $ETC_FSTAB for automatic filesystem mounting"
+execute "mount_loop $LOOP_NAME $HTML_UKOL"                                      "5) Mounting filesystem to $HTML_UKOL"
+execute "download_packages $HTML_UKOL $*"                                       "6) Downloading packages"
+execute "generate_repodata $HTML_UKOL"                                          "7) Generating repodata in $HTML_UKOL"
+execute "configure_repo_url $REPO_NAME $REPO_NAME http://localhost/$REPO_NAME"  "8) Configuring /etc/yum.repos.d/$REPO_NAME.repo for localhost url"
+execute "launch_webserver"                                                      "9) Launching webserver"
+execute "verify_repo_availability $REPO_NAME"                                   "10) Verification of $REPO_NAME repository availability"
+execute "unmount $LOOP_NAME"                                                    "11) Unmounting filesystem from $HTML_UKOL" 
+execute "remount $LOOP_NAME"                                                    "12) Remounting filesystem through $ETC_FSTAB and verifying mount state" 
+execute "print_info $REPO_NAME"                                                 "13) Printing info about all available packages in \"$REPO_NAME\" repository" 
