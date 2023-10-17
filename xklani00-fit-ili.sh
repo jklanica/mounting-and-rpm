@@ -27,11 +27,16 @@ function create_fs () {
 # $3 - fs type
 function edit_fstab () {
     echo "$1" "$2" "$3" defaults 0 1 >> /etc/fstab
+    systemctl daemon-reload
 }
 
 # $1 - loop name
 # $2 - mount point
 function mount_loop () {
+    if [[ ! -e "$2" ]]; then
+        mkdir -p "$(dirname "$2")"
+        touch "$2"
+    fi
     mount "$1" "$2"
 }
 
