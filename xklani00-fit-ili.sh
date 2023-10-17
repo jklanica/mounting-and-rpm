@@ -109,7 +109,7 @@ function remount () {
 
 # $1 - repo name
 function print_info () {
-    yum info --repo "$1"
+    yum info | grep "$1"
     return 0
 }
 
