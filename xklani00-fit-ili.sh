@@ -6,7 +6,7 @@ function install_miss_req () {
         if ! command -v "$package" &> /dev/null
         then
             echo ".. downloading $package"
-            dnf install "$package" || return 1
+            dnf install "$package" -y || return 1
         fi
     done
 }
