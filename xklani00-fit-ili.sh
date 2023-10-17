@@ -7,7 +7,7 @@ function install_miss_req () {
 # $1 - size with units
 # $2 - image name
 function create_img () {
-    dd if=/dev/zero of="$2" bs="$1" count=1
+    dd if=/dev/zero of="$2" bs="$1" count=1 > /dev/null
 }
 
 # $1 - image name
@@ -33,9 +33,8 @@ function edit_fstab () {
 # $1 - loop name
 # $2 - mount point
 function mount_loop () {
-    if [[ ! -e "$2" ]]; then
-        mkdir -p "$(dirname "$2")"
-        touch "$2"
+    if [[ ! -d "$2" ]]; then
+        mkdir -p "$2"
     fi
     mount "$1" "$2"
 }
