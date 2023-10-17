@@ -4,25 +4,35 @@ function install_miss_req () {
     return 0
 }
 
+# $1 - size with units
+# $2 - image name
 function create_img () {
-    return 0
+    dd if=/dev/zero of="$2" bs="$1" count=1
 }
 
+# $1 - image name
+# returns loop name in $LOOP_NAME
 function create_loop () {
-    # $LOOP_NAME
-    return 0
+    LOOP_NAME=$(losetup --find --show "$1")
 }
 
+# $1 - fs type
+# $2 - loop name
 function create_fs () {
-    return 0
+    mkfs -t "$1" "$2"
 }
 
+# $1 - loop name
+# $2 - mount point
+# $3 - fs type
 function edit_fstab () {
-    return 0
+    echo "$1" "$2" "$3" defaults 0 1 >> /etc/fstab
 }
 
-function mount () {
-    return 0
+# $1 - loop name
+# $2 - mount point
+function mount_loop () {
+    mount "$1" "$2"
 }
 
 function download_packages () {
@@ -68,7 +78,7 @@ function print_info () {
 }
 
 function execute () {
-    if [ ! -z "$2" ]; then
+    if [ -n "$2" ]; then
         echo "$2"
     fi
     if ! $1; then
@@ -88,9 +98,9 @@ ETC_FSTAB=/etc/fstab
 execute "install_miss_req $MISSING_REQUIREMENTS"
 execute "create_img 200MB $UKOL_IMG" "1) Creating 200 MB file $UKOL_IMG"
 execute "create_loop $UKOL_IMG" "2) Creating loop device for $UKOL_IMG"
-execute "create_fs $LOOP_NAME" "3) Creating filesystem ext4 on the new loop device"
-execute "edit_fstab $LOOP_NAME" "4) Editing $ETC_FSTAB for automatic filesystem mounting"
-execute "mount $LOOP_NAME $HTML_UKOL" "5) Mounting filesystem to $HTML_UKOL"
+execute "create_fs ext4 $LOOP_NAME" "3) Creating filesystem ext4 on the new loop device"
+execute "edit_fstab $LOOP_NAME $HTML_UKOL ext4" "4) Editing $ETC_FSTAB for automatic filesystem mounting"
+execute "mount_loop $LOOP_NAME $HTML_UKOL" "5) Mounting filesystem to $HTML_UKOL"
 execute "download_packages $*" "6) Downloading packages"
 execute "generate_repodata $HTML_UKOL" "7) Generating repodata in $HTML_UKOL"
 execute "configure_repo_url ukol http://localhost/ukol" "8) Configuring /etc/yum.repos.d/ukol.repo for localhost url"
