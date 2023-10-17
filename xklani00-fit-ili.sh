@@ -1,7 +1,11 @@
 #!/bin/bash
 
+# ... - commands to be installed
 function install_miss_req () {
-    return 0
+    for package in "$@"; do
+        echo ".. downloading $package"
+        dnf install "$package" || return 1
+    done
 }
 
 # $1 - size with units
@@ -73,8 +77,8 @@ function configure_repo_url () {
         "[$1]"   \
         "name=$2"   \
         "baseurl=$3" \
+        "gpgcheck=0" \
         "enabled=1" \
-        "gpgcheck=1" \
         > "$FILE_PATH"
     return 0
 }
@@ -118,7 +122,7 @@ function execute () {
 trap "exit 1" USR1
 export TOP_PID=$$
 
-MISSING_REQUIREMENTS=""
+MISSING_REQUIREMENTS="createrepo"
 UKOL_IMG=/var/tmp/ukol.img
 HTML_UKOL=/var/www/html/ukol
 ETC_FSTAB=/etc/fstab
