@@ -3,8 +3,11 @@
 # ... - commands to be installed
 function install_miss_req () {
     for package in "$@"; do
-        echo ".. downloading $package"
-        dnf install "$package" || return 1
+        if ! command -v "$package" &> /dev/null
+        then
+            echo ".. downloading $package"
+            dnf install "$package" || return 1
+        fi
     done
 }
 
