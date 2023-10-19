@@ -29,11 +29,11 @@ function create_fs () {
     mkfs -t "$1" "$2" &> /dev/null
 }
 
-# $1 - loop name
+# $1 - image name
 # $2 - mount point
 # $3 - fs type
 function edit_fstab () {
-    echo "$1" "$2" "$3" defaults,loop 0 1 >> /etc/fstab || return 1
+    echo "$1" "$2" "$3" loop 0 0 >> /etc/fstab || return 1
     systemctl daemon-reload
 }
 
@@ -138,7 +138,7 @@ execute "install_miss_req $MISSING_REQUIREMENTS"                                
 execute "create_img 200MB $UKOL_IMG"                                            "1) Creating 200 MB file $UKOL_IMG"
 execute "create_loop $UKOL_IMG"                                                 "2) Creating loop device for $UKOL_IMG"
 execute "create_fs $FS_TYPE $LOOP_NAME"                                         "3) Creating filesystem $FS_TYPE on the new loop device"
-execute "edit_fstab $LOOP_NAME $HTML_UKOL $FS_TYPE"                             "4) Editing $ETC_FSTAB for automatic filesystem mounting"
+execute "edit_fstab $UKOL_IMG $HTML_UKOL $FS_TYPE"                              "4) Editing $ETC_FSTAB for automatic filesystem mounting"
 execute "mount_loop $LOOP_NAME $HTML_UKOL"                                      "5) Mounting filesystem to $HTML_UKOL"
 execute "download_packages $HTML_UKOL $*"                                       "6) Downloading packages"
 execute "generate_repodata $HTML_UKOL"                                          "7) Generating repodata in $HTML_UKOL"
