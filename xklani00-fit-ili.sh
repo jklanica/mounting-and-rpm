@@ -6,7 +6,7 @@ function install_miss_req () {
         if ! command -v "$package" &> /dev/null
         then
             echo ".. downloading $package"
-            dnf install "$package" -y || return 1
+            dnf install "$package" -y -q || return 1
         fi
     done
 }
@@ -14,7 +14,7 @@ function install_miss_req () {
 # $1 - size with units
 # $2 - image name
 function create_img () {
-    dd if=/dev/zero of="$2" bs="$1" count=1
+    dd if=/dev/zero of="$2" bs="$1" count=1 &>/dev/null
 }
 
 # $1 - image name
@@ -26,7 +26,7 @@ function create_loop () {
 # $1 - fs type
 # $2 - loop name
 function create_fs () {
-    mkfs -t "$1" "$2" 1> /dev/null
+    mkfs -t "$1" "$2" &> /dev/null
 }
 
 # $1 - loop name
@@ -60,10 +60,10 @@ function generate_repodata () {
     cd "$1" || return 1
 
     echo ".. generating"
-    createrepo "$1" || return 1
+    createrepo "$1" &>/dev/null || return 1
 
     echo ".. setting selinux context"
-    restorecon -Rv "$1"
+    restorecon -Rv "$1" &>/dev/null
 }
 
 # $1 - repo name (without whitespace)
@@ -85,7 +85,7 @@ function configure_repo_url () {
 }
 
 function launch_webserver () {
-    service httpd start
+    service httpd start &>/dev/null
 }
 
 # $1 - repo name
@@ -103,7 +103,7 @@ function remount () {
     echo ".. mounting all filesystems according to /etc/fstab"
     mount -a || return 1
     echo ".. verifying filesystem is mounted"
-    mount | grep "$1"
+    mount | grep "$1" &>/dev/null
 }
 
 # $1 - repo name
@@ -134,7 +134,7 @@ ETC_FSTAB=/etc/fstab
 REPO_NAME=ukol
 FS_TYPE=ext4
 
-execute "install_miss_req $MISSING_REQUIREMENTS"
+execute "install_miss_req $MISSING_REQUIREMENTS"                                "0) Downloading dependencies"
 execute "create_img 200MB $UKOL_IMG"                                            "1) Creating 200 MB file $UKOL_IMG"
 execute "create_loop $UKOL_IMG"                                                 "2) Creating loop device for $UKOL_IMG"
 execute "create_fs $FS_TYPE $LOOP_NAME"                                         "3) Creating filesystem $FS_TYPE on the new loop device"
