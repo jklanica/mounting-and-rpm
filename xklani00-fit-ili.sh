@@ -33,7 +33,7 @@ function create_fs () {
 # $2 - mount point
 # $3 - fs type
 function edit_fstab () {
-    echo "$1" "$2" "$3" defaults 0 1 >> /etc/fstab || return 1
+    echo "$1" "$2" "$3" defaults,loop 0 1 >> /etc/fstab || return 1
     systemctl daemon-reload
 }
 
