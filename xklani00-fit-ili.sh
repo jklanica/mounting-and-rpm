@@ -49,10 +49,9 @@ function mount_loop () {
 # $1 - output directory
 # ... - packages to be installed
 function download_packages () {
-    cd "$1" || return 1
     for package in "${@:2}"; do
         echo ".. downloading $package"
-        yum download "$package" || return 1
+        yum install "$package" -y -q --downloadonly --downloaddir="$1" || return 1
     done
 }
 
