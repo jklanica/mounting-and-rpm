@@ -108,7 +108,7 @@ function remount () {
 
 # $1 - repo name
 function print_info () {
-    yum info | grep "$1"
+    yum info --showduplicates --available --repo="$1"
     return 0
 }
 
